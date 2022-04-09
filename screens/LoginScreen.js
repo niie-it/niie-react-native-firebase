@@ -1,8 +1,55 @@
 import React, { useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getFirestore, doc, getDoc, query, where, collection, getDocs } from "firebase/firestore";
+import { app } from '../firebase';
 
 export const LoginScreen = ({ navigation }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = () => {
+        const auth = getAuth();
+        const db = getFirestore(app);
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in 
+                const user = userCredential.user;
+
+                // // Get userinfo from fireStore by id
+                // const docRef = doc(db, "users", "zKFQ7ijrrgUDIXHR3Bo3");
+                // getDoc(docRef)
+                //     .then((res) => {
+                //         console.log(res);
+                //         if (res.exists()) {
+                //             console.log("Document data:", res.data());
+                //         }
+                //         else {
+                //             console.log("No such document!");
+                //         }
+                //     })
+                //     .catch((err) => alert(err.message))
+
+                // Find user by user.id
+                const usersRef = collection(db, "users");
+
+                // Create a query against the collection.
+                const q = query(usersRef, where("id", "==", user.uid));
+                getDocs(q).then((response) => {
+                    response.forEach((doc) => {
+                        console.log(doc.id, " => ", doc.data());
+                        navigation.navigate("Home", { user: doc.data() })
+                    });
+                });
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                alert(errorMessage);
+            });
+    };
+
     return (
         <View style={styles.container}>
             <KeyboardAwareScrollView
@@ -14,6 +61,8 @@ export const LoginScreen = ({ navigation }) => {
                     placeholderTextColor="#aaaaaa"
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
+                    value={email}
+                    onChangeText={(e) => setEmail(e)}
                 />
                 <TextInput
                     style={styles.input}
@@ -22,9 +71,12 @@ export const LoginScreen = ({ navigation }) => {
                     placeholder='Password'
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
+                    value={password}
+                    onChangeText={(v) => setPassword(v)}
                 />
                 <TouchableOpacity
                     style={styles.button}
+                    onPress={() => handleLogin()}
                 >
                     <Text style={styles.buttonTitle}>Log in</Text>
                 </TouchableOpacity>

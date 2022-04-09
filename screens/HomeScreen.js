@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export const HomeScreen = ({ navigator }) => {
+export const HomeScreen = ({ navigation }) => {
     return (
         <View>
             <Text>Home Screen</Text>
