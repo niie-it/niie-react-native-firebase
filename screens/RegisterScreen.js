@@ -1,8 +1,51 @@
 import React, { useState } from 'react'
 import { Image, Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 
-export const RegisterScreen = ({ navigator }) => {
+import { app } from '../firebase';
+
+
+export const RegisterScreen = ({ navigation }) => {
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+
+    const handleRegister = () => {
+        if (password !== confirmPassword) {
+            alert('Password donot match');
+            return;
+        }
+
+        // Initialize Cloud Firestore and get a reference to the service
+        const db = getFirestore(app);
+
+        const auth = getAuth();
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in 
+                const user = userCredential.user;
+                //store user information into firestore
+                const data = {
+                    id: user.uid,
+                    email,
+                    fullName
+                };
+                addDoc(collection(db, "users"), data)
+                    .then(() => {
+                        navigation.navigate("Home", { user: data })
+                    }).catch((err) => alert(err));
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                // ..
+                alert(errorMessage);
+            });
+    };
+
     return (
         <View style={styles.container}>
             <KeyboardAwareScrollView
@@ -14,6 +57,8 @@ export const RegisterScreen = ({ navigator }) => {
                     placeholderTextColor="#aaaaaa"
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
+                    value={fullName}
+                    onChangeText={(v) => setFullName(v)}
                 />
                 <TextInput
                     style={styles.input}
@@ -21,6 +66,8 @@ export const RegisterScreen = ({ navigator }) => {
                     placeholderTextColor="#aaaaaa"
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
+                    value={email}
+                    onChangeText={(e) => setEmail(e)}
                 />
                 <TextInput
                     style={styles.input}
@@ -29,6 +76,8 @@ export const RegisterScreen = ({ navigator }) => {
                     placeholder='Password'
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
+                    value={password}
+                    onChangeText={(v) => setPassword(v)}
                 />
                 <TextInput
                     style={styles.input}
@@ -37,14 +86,24 @@ export const RegisterScreen = ({ navigator }) => {
                     placeholder='Confirm Password'
                     underlineColorAndroid="transparent"
                     autoCapitalize="none"
+                    value={confirmPassword}
+                    onChangeText={(v) => setConfirmPassword(v)}
                 />
                 <TouchableOpacity
                     style={styles.button}
+                    onPress={() => handleRegister()}
                 >
                     <Text style={styles.buttonTitle}>Create account</Text>
                 </TouchableOpacity>
                 <View style={styles.footerView}>
-                    <Text style={styles.footerText}>Already got an account? <Text style={styles.footerLink}>Log in</Text></Text>
+                    <Text style={styles.footerText}>Already got an account?
+                        <Text
+                            style={styles.footerLink}
+                            onPress={() => navigation.navigate("Login")}
+                        >
+                            Log in
+                        </Text>
+                    </Text>
                 </View>
             </KeyboardAwareScrollView>
         </View>

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-export const LoginScreen = ({ navigator }) => {
+export const LoginScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <KeyboardAwareScrollView
@@ -29,7 +29,7 @@ export const LoginScreen = ({ navigator }) => {
                     <Text style={styles.buttonTitle}>Log in</Text>
                 </TouchableOpacity>
                 <View style={styles.footerView}>
-                    <Text style={styles.footerText}>Don't have an account? <Text style={styles.footerLink}>Sign up</Text></Text>
+                    <Text style={styles.footerText}>Don't have an account? <Text style={styles.footerLink} onPress={() => navigation.navigate("Register")}>Sign up</Text></Text>
                 </View>
             </KeyboardAwareScrollView>
         </View>
